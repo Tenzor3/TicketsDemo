@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TicketsDemo.Data.Entities;
 using TicketsDemo.Data.Repositories;
 using TicketsDemo.Domain.Interfaces;
+using TicketsDemo.Domain.DefaultImplementations.PriceCalculationStrategy;
 
 namespace TicketsDemo.Domain.DefaultImplementations
 {
@@ -25,7 +26,7 @@ namespace TicketsDemo.Domain.DefaultImplementations
             _runRepository = runRepository;
         }
 
-        public Ticket CreateTicket(int reservationId, string fName, string lName)
+        public Ticket CreateTicket(int reservationId, string fName, string lName, bool includeTea, bool includeCoffee)
         {
             var res = _resRepo.Get(reservationId);
 
@@ -45,7 +46,11 @@ namespace TicketsDemo.Domain.DefaultImplementations
                 PriceComponents = new List<PriceComponent>()
             };
 
-            newTicket.PriceComponents = _priceStr.CalculatePrice(placeInRun);
+            DecoratorCalculationStrategy temp = (DecoratorCalculationStrategy)_priceStr;
+            temp.IncludeCoffee = includeCoffee;
+            temp.IncludeTea = includeTea;
+
+            newTicket.PriceComponents = temp.CalculatePrice(placeInRun);
 
             _tickRepo.Create(newTicket);
             return newTicket;

@@ -57,32 +57,32 @@ namespace TicketsDemo.EF.Migrations
                 .ForeignKey("dbo.Run", t => t.RunId, cascadeDelete: true)
                 .Index(t => t.PlaceId)
                 .Index(t => t.RunId);
-            
+
             CreateTable(
                 "dbo.Reservation",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        Start = c.DateTime(nullable: false),
-                        End = c.DateTime(nullable: false),
-                        PlaceInRunId = c.Int(nullable: false),
-                        TicketId = c.Int(),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    Start = c.DateTime(nullable: false),
+                    End = c.DateTime(nullable: false),
+                    PlaceInRunId = c.Int(nullable: false),
+                    TicketId = c.Int(),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.PlaceInRun", t => t.PlaceInRunId, cascadeDelete: true)
                 .Index(t => t.PlaceInRunId);
-            
+
             CreateTable(
                 "dbo.Ticket",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        Status = c.Int(nullable: false),
-                        FirstName = c.String(),
-                        LastName = c.String(),
-                        ReservationId = c.Int(nullable: false),
-                        CreatedDate = c.DateTime(nullable: false),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    Status = c.Int(nullable: false),
+                    FirstName = c.String(),
+                    LastName = c.String(),
+                    ReservationId = c.Int(nullable: false),
+                    CreatedDate = c.DateTime(nullable: false),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Reservation", t => t.Id)
                 .Index(t => t.Id);

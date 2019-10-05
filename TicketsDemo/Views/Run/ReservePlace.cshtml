@@ -1,23 +1,19 @@
 ﻿@model TicketsDemo.Models.ReservationViewModel
-
 @{
     ViewBag.Title = "Run details";
 }
-
 <h2>Train @Model.Train.Number (@Model.Train.StartLocation - @Model.Train.EndLocation)</h2>
 <h4>Run starts at @Model.Date.ToShortDateString()</h4>
-
 <h2>the place @Model.PlaceInRun.Number in carriage @Model.PlaceInRun.CarriageNumber is reserved for you for</h2>
-
 <h4>Price:</h4>
 
-@foreach (var pc in Model.PriceComponents) { 
+@foreach (var pc in Model.PriceComponents) {
     <span>@pc.Name:@pc.Value$</span><br />
 }
 
-@using (Html.BeginForm("CreateTicket","Run"))
-{ 
-    <input type="hidden" value="@Model.Reservation.Id" name="ReservationId" id="ReserevationId"/>
+@using (Html.BeginForm("CreateTicket", "Run"))
+{
+    <input type="hidden" value="@Model.Reservation.Id" name="ReservationId" id="ReserevationId" />
     <table>
         <tr>
             <td>First Name</td>
@@ -27,10 +23,14 @@
             <td>Last Name</td>
             <td><input type="text" name="LastName" id="LastName" /></td>
         </tr>
+        <tr>
+            <td>Include Tea</td>
+            <td><input type="checkbox" name="IncludeTea" value="true" id="IncludeTea" /></td>
+        </tr>
+        <tr>
+            <td>Include Coffee</td>
+            <td><input type="checkbox" name="IncludeCoffee" value="true" id="IncludeCoffee" /></td>
+        </tr>
     </table>
-    <input type="submit" value="submit"/>
+    <input type="submit" value="submit" />
 }
-
-<!--public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public int ReservationId { get; set; }-->

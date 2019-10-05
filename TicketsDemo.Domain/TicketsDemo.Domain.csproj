@@ -39,10 +39,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultImplementations\Prices.cs" />
+    <Compile Include="DefaultImplementations\CoffeePriceCalculationStrategy.cs" />
+    <Compile Include="DefaultImplementations\DecoratorPriceCalculationStrategy.cs" />
     <Compile Include="DefaultImplementations\FileLogger.cs" />
     <Compile Include="DefaultImplementations\DefaultPriceCalculationStrategy.cs" />
     <Compile Include="DefaultImplementations\ReservationService.cs" />
     <Compile Include="DefaultImplementations\Schedule.cs" />
+    <Compile Include="DefaultImplementations\TeaPriceCalculationStrategy.cs" />
     <Compile Include="DefaultImplementations\TicketService.cs" />
     <Compile Include="Interfaces\IReservationService.cs" />
     <Compile Include="Interfaces\ILogger.cs" />

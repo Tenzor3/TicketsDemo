@@ -68,7 +68,7 @@ namespace TicketsDemo.Controllers
         [HttpPost]
         public ActionResult CreateTicket(CreateTicketModel model)
         {
-            var tick = _tickServ.CreateTicket(model.ReservationId,model.FirstName,model.LastName);
+            var tick = _tickServ.CreateTicket(model.ReservationId,model.FirstName,model.LastName, model.IncludeTea, model.IncludeCoffee);
             return RedirectToAction("Ticket", new { id = tick.Id });
         }
 
