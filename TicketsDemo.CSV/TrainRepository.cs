@@ -4,88 +4,113 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TicketsDemo.CSV.CSVDTO;
+using FileHelpers;
 using TicketsDemo.Data.Entities;
 using TicketsDemo.Data.Repositories;
 
 namespace TicketsDemo.CSV.Repositories
 {
-    public class CSVTrainRepository : ITrainRepository
+    public class CsvTrainRepository : ITrainRepository
     {
-        private string _dataFolder;
-        private ICSVReader _reader;
+        // I have not idea where I should paste this configuration 
+        private const string DataDirectory =
+            "C:\\Users\\oleks\\Documents\\programming_university\\TicketsDemo\\TicketsDemoCSVData";
 
-        public CSVTrainRepository(string dataFolder, ICSVReader csvReader)
-        {
-            _reader = csvReader;
-            _dataFolder = dataFolder;
-        }
+        private const string TrainFileName = "Train.csv";
+        private const string CarriageFileName = "Carriage.csv";
+        private const string PlaceFileName = "Place.csv";
 
         #region ITrainRepository Members
 
         public List<Train> GetAllTrains()
         {
-            var trainsDTO = _reader.ReadFile<TrainCSV>(Path.Combine(_dataFolder,"trains.txt"));
+            var engine = new FileHelperEngine<Train>();
+            var result = engine.ReadFile(Path.Combine(DataDirectory, TrainFileName));
 
-            return trainsDTO.Select(td => new Train()
+            foreach (var itemTrain in result)
             {
-                Carriages = new List<Carriage>(),
-                StartLocation = td.StartLocation,
-                EndLocation = td.EndLocation,
-                Number = int.Parse(td.Number),
-                Id = int.Parse(td.Number)
-            }).ToList();
+                itemTrain.Carriages = new List<Carriage>();
+            }
+
+            return result.ToList();
         }
 
         public Data.Entities.Train GetTrainDetails(int id)
         {
             var train = GetAllTrains().Single(t => t.Id == id);
-            train.Carriages = new List<Carriage>();
 
-            var i = 0;
-            foreach(var carriageDTO in _reader.ReadFile<CarriageCSV>(Path.Combine(_dataFolder, String.Format("carriage{0}.txt",id)))){
-                var carr = new Carriage()
-                {
-                    TrainId = id,
-                    Train = train,
-                    DefaultPrice = decimal.Parse(carriageDTO.Price),
-                    Id = i,
-                    Type = (CarriageType)Enum.Parse(typeof(CarriageType), carriageDTO.Type),
-                    Places = new List<Place>()
-                };
+            var carriageEngine = new FileHelperEngine<Carriage>();
+            var placeEngine = new FileHelperEngine<Place>();
 
-                var places = int.Parse(carriageDTO.Places);
-                for (int pl = 1; pl <= places; pl++) {
-                    var newPlace = new Place() { 
-                        Carriage = carr, 
-                        CarriageId = carr.Id, 
-                        Number = pl,
-                        Id = carr.Id*1000000 + pl, //magic
-                        PriceMultiplier = 1 
-                    };
-                    carr.Places.Add(newPlace);
-                }
+            var carriages = carriageEngine
+                .ReadFile(Path.Combine(DataDirectory, CarriageFileName))
+                .Where(t => t.TrainId == train.Id);
 
-                i++;
-                train.Carriages.Add(carr);
-            }
+            train.Carriages = carriages.ToList();
+            train.Carriages.ForEach(test => test.Train = train);
+
+            var places = placeEngine
+                .ReadFile(Path.Combine(DataDirectory, PlaceFileName))
+                .Where(p => train.Carriages.Any(iterCarriage => iterCarriage.Id == p.CarriageId));
+
+            train.Carriages.ForEach(carriage => carriage.Places = places.Where(place => place.CarriageId == carriage.Id).ToList());
+            train.Carriages.ForEach(carriage => carriage.Places.ForEach(place => place.Carriage = carriage));
 
             return train;
         }
 
         public void CreateTrain(Data.Entities.Train train)
         {
-            throw new NotImplementedException();
+            var trainEngine = new FileHelperEngine<Train>();
+            var trains = new List<Train> {train};
+            trainEngine.WriteFile(Path.Combine(DataDirectory, TrainFileName), trains);
+
+            var carriagesEngine = new FileHelperEngine<Carriage>();
+            carriagesEngine.WriteFile(Path.Combine(DataDirectory, CarriageFileName), train.Carriages);
+            
+            var placeEngine = new FileHelperEngine<Place>();
+            foreach (var carriage in train.Carriages)
+            {
+                placeEngine.WriteFile(Path.Combine(DataDirectory, PlaceFileName), carriage.Places);
+            }
         }
 
         public void UpdateTrain(Data.Entities.Train train)
         {
-            throw new NotImplementedException();
+            var allTrains = GetAllTrains();
+            var updatedTrainsList = new List<Train>();
+            foreach (var trainItem in allTrains)
+            {
+                if (trainItem.Id == train.Id)
+                {
+                    updatedTrainsList.Add(train);
+                    continue;
+                }
+
+                updatedTrainsList.Add(GetTrainDetails(trainItem.Id));
+            }
+
+            File.Delete(Path.Combine(DataDirectory, TrainFileName));
+            File.Create(Path.Combine(DataDirectory, TrainFileName));
+
+            foreach (var trainItem in updatedTrainsList)
+            {
+                CreateTrain(trainItem);
+            }
         }
 
         public void DeleteTrain(Data.Entities.Train train)
         {
-            throw new NotImplementedException();
+            var allTrains = GetAllTrains();
+            var updatedTrainsList = (from trainItem in allTrains where trainItem.Id != train.Id select GetTrainDetails(trainItem.Id)).ToList();
+
+            File.Delete(Path.Combine(DataDirectory, TrainFileName));
+            File.Create(Path.Combine(DataDirectory, TrainFileName));
+
+            foreach (var trainItem in updatedTrainsList)
+            {
+                CreateTrain(trainItem);
+            }
         }
 
         #endregion
